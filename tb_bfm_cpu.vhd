@@ -47,9 +47,6 @@ architecture stimulus of tb_BFM_CPU is
 	signal CPU_D1		: std_logic_vector(15 downto 0);
 	signal CPU_INTN1		: std_logic;
 	
-	
-	signal probe_req	: std_logic;
-	signal probe_ack	: std_logic;
 
 --
 	signal RUNNING	: std_logic := '1';
@@ -79,18 +76,15 @@ begin
 	-- 
 	CPU_D1 <= (others=>'Z') when CPU_OEN1 = '1' else CPU_A1;
 	
-	probe_ack <= '1' when bfm_ack = 'Z' else '0';
-	probe_req <= '1' when bfm_req = '1' else '0';
-	
 	
 	GO: process
 		variable data : integer;
 	begin
-		cpu_write(bfm_req, bfm_ack, 16#3C3C#, 16#AA55#);
+		cpu_write(bfm_control, 16#3C3C#, 16#AA55#);
 		wait for 50 ns;
-		--cpu_read( bfm_req, bfm_ack, 16#3C3C#, data);
+		--cpu_read( bfm_control, 16#3C3C#, data);
 		--report "cpu_read: data=" & integer'image(data);
-		cpu_check(bfm_req, bfm_ack, 16#3C3C#, 16#3C3C#);
+		cpu_check(bfm_control, 16#3C3C#, 16#3C3C#);
 		RUNNING <= '0';
 		wait;
 	end process GO;

@@ -48,7 +48,7 @@ begin
 
 server: PROCESS
   BEGIN
-	bfm_ack <= 'Z';
+	bfm_control <= ctrl_idle;
   	CPU_OEN <= '1';
 	CPU_CSN <= '1';
 	CPU_BEN <= "11";
@@ -56,11 +56,11 @@ server: PROCESS
 	CPU_D <= (others=>'Z');
 	CPU_WRN <= '1';
 	CPU_RDN <= '1';
-    WAIT UNTIL bfm_req = '1';
+    WAIT UNTIL bfm_control = ctrl_request;
     
     CASE bfm_info.op IS
       WHEN req_cpu_write =>
-        bfm_ack <= '0';
+        bfm_control <= ctrl_busy;
         WAIT FOR 0 ns;
         --trigger the BFM process with a write command and wait until
         --it has finished
@@ -86,7 +86,7 @@ server: PROCESS
 		wait for C_WR_EXTHOLD * C_TCYCLE;
 
       WHEN req_cpu_read =>
-        bfm_ack <= '0';
+        bfm_control <= ctrl_busy;
         WAIT FOR 0 ns;
         --trigger the BFM process with a read command and wait until
         --it has finished
@@ -113,7 +113,7 @@ server: PROCESS
 		wait for C_RD_EXTHOLD * C_TCYCLE;
 		
 	  WHEN req_interrupt =>
-		bfm_ack <= '0';
+		bfm_control <= ctrl_busy;
         WAIT FOR 0 ns;
 		if (CPU_INTN = '1') then
 			wait on CPU_INTN;
@@ -123,14 +123,7 @@ server: PROCESS
         null;
         
     END CASE;
-    -- Notify client that the request has been handled and that
-    -- data from the server is valid (until a new request is
-    -- received).
-    --
-    if (bfm_req = '1') then
-		WAIT UNTIL bfm_req = '0';
-	end if;
-    bfm_ack <= 'Z';
+    bfm_control <= ctrl_idle;
   END PROCESS server;
 
 end bfm;
