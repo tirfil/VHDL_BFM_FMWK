@@ -2,6 +2,30 @@
 
 # Vhdl test framework
 
+Update:
+
+Replace bfm_req / bfm_ack mechanism by a unique bfm_control signal based on a resolved type.
+
+This signal could have four values: 
+* crtl_idle (default), 
+* ctrl_request (TB send request to BFM), 
+* ctrl_busy (BFM is working) and 
+* ctrl_error (error case).
+
+Resolution function is based on this table:
+
+```
+  CONSTANT RESOLUTION_TABLE : TABLE :=
+	-- ctrl_idle	, ctrl_request	, ctrl_busy	 , ctrl_error	
+	-- ------------------------------------------------------
+	(( ctrl_idle	, ctrl_request	, ctrl_busy	 , ctrl_error	),  -- ctrl_idle
+	 ( ctrl_request	, ctrl_error	, ctrl_busy	 , ctrl_error	),	-- ctrl_request
+	 ( ctrl_busy	, ctrl_busy		, ctrl_busy	 , ctrl_error	),  -- ctrl_busy
+	 ( ctrl_error	, ctrl_error	, ctrl_error , ctrl_error	)); -- ctrl_error
+ ```
+ 
+--------------------------------------------------
+
 * Content:
 
   tb_bfm_cpu.vhd    : Test Bench (example)
